@@ -1,0 +1,67 @@
+name: バグ報告
+description: 既存の機能に関するバグを報告する
+title: "fix: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        バグ報告ありがとうございます。できるだけ詳しく記入してください。
+
+  - type: textarea
+    id: description
+    attributes:
+      label: バグの説明
+      description: 発生しているバグの内容を説明してください。
+      placeholder: 例）todo を削除すると画面が真っ白になる
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 再現手順
+      description: バグを再現するための手順を記述してください。
+      placeholder: |
+        1. todo 一覧画面を開く
+        2. 任意の todo の削除ボタンをクリックする
+        3. 画面が真っ白になる
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期待される動作
+      description: 本来どうなるべきかを説明してください。
+      placeholder: 例）削除後、一覧から該当 todo が消えてその他の todo が表示される
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: 実際の動作
+      description: 実際に何が起きているかを説明してください。
+      placeholder: 例）画面が真っ白になり、コンソールに TypeError が表示される
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: 環境情報
+      placeholder: |
+        - OS: macOS 15.x / Windows 11 / Ubuntu 24.04
+        - ブラウザ / ランタイム: Chrome 130 / Node.js 22
+        - バージョン・ブランチ: main @ abc1234
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: その他（スクリーンショット・ログ等）
+      description: 参考になる情報があれば添付してください。
+    validations:
+      required: false

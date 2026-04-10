@@ -1,0 +1,41 @@
+{
+  "name": "service-template",
+  "dockerComposeFile": "../.docker/docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/service-template",
+  "shutdownAction": "stopCompose",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+        "mtxr.sqltools",
+        "mtxr.sqltools-driver-pg",
+        "ms-azuretools.vscode-docker"
+      ],
+      "settings": {
+        "sqltools.connections": [
+          {
+            "name": "todo_db (dev)",
+            "driver": "PostgreSQL",
+            "host": "postgres",
+            "port": 5432,
+            "database": "todo_db",
+            "username": "postgres",
+            "password": "postgres"
+          },
+          {
+            "name": "todo_db_test",
+            "driver": "PostgreSQL",
+            "host": "postgres",
+            "port": 5432,
+            "database": "todo_db_test",
+            "username": "postgres",
+            "password": "postgres"
+          }
+        ]
+      }
+    }
+  },
+  "remoteUser": "root"
+}

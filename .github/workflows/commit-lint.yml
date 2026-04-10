@@ -1,0 +1,65 @@
+name: コミットメッセージ検証
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+  push:
+    branches-ignore:
+      - main
+
+jobs:
+  lint:
+    name: Conventional Commits 準拠チェック
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: PR タイトルを検証
+        if: github.event_name == 'pull_request'
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          PATTERN='^(feat|fix|docs|style|refactor|test|chore|ci|perf|revert)(\(.+\))!?: .+'
+          if ! echo "$TITLE" | grep -qE "$PATTERN"; then
+            echo "::error::PR タイトルが Conventional Commits 形式に従っていません。"
+            echo "::error::期待される形式: <type>(<scope>): <subject>"
+            echo "::error::type: feat|fix|docs|style|refactor|test|chore|ci|perf|revert"
+            echo "::error::現在のタイトル: $TITLE"
+            exit 1
+          fi
+          echo "✓ PR タイトルが規約に準拠しています: $TITLE"
+
+      - name: プッシュされたコミットメッセージを検証
+        if: github.event_name == 'push'
+        env:
+          BEFORE: ${{ github.event.before }}
+          SHA: ${{ github.sha }}
+        run: |
+          PATTERN='^(feat|fix|docs|style|refactor|test|chore|ci|perf|revert)(\(.+\))!?: .+'
+
+          # 新規ブランチ（before が all zeros）の場合は HEAD のみ検証
+          if [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            COMMITS=$(git log --pretty=format:"%s" -1 "$SHA")
+          else
+            COMMITS=$(git log --pretty=format:"%s" "${BEFORE}..${SHA}" 2>/dev/null \
+                      || git log --pretty=format:"%s" -1 "$SHA")
+          fi
+
+          FAILED=0
+          while IFS= read -r MSG; do
+            [ -z "$MSG" ] && continue
+            # Merge commit と Revert commit はスキップ
+            echo "$MSG" | grep -qE '^(Merge|Revert) ' && continue
+            if ! echo "$MSG" | grep -qE "$PATTERN"; then
+              echo "::error::規約違反のコミットメッセージ: $MSG"
+              FAILED=1
+            fi
+          done <<< "$COMMITS"
+
+          if [ "$FAILED" -eq 1 ]; then
+            echo "::error::期待される形式: <type>(<scope>): <subject>"
+            exit 1
+          fi
+          echo "✓ すべてのコミットメッセージが規約に準拠しています"

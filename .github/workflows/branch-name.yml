@@ -1,0 +1,24 @@
+name: ブランチ名検証
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  check:
+    name: ブランチ命名規則チェック
+    runs-on: ubuntu-latest
+    steps:
+      - name: ブランチ名を検証
+        env:
+          BRANCH: ${{ github.head_ref }}
+        run: |
+          PATTERN='^(feature|fix|hotfix|chore|release|docs|ci)/.+'
+          if ! echo "$BRANCH" | grep -qE "$PATTERN"; then
+            echo "::error::ブランチ名が規約に違反しています: $BRANCH"
+            echo "::error::期待される形式: <type>/<issue-number>-<description>"
+            echo "::error::type: feature|fix|hotfix|chore|release|docs|ci"
+            echo "::error::例: feature/42-add-todo-filter, fix/57-fix-login"
+            exit 1
+          fi
+          echo "✓ ブランチ名が規約に準拠しています: $BRANCH"

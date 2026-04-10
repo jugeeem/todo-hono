@@ -1,0 +1,23 @@
+# <type>(<scope>): <subject>
+#
+# type   : feat | fix | docs | style | refactor | test | chore | ci | perf | revert
+# scope  : 変更対象のモジュール（任意）  例: api, web, db
+# subject: 命令形・日本語・72 文字以内・末尾ピリオドなし
+#
+# 例:
+#   feat(api): todo 一覧取得エンドポイントを追加する
+#   fix(web): ログイン後のリダイレクトを修正する
+#   chore: 依存パッケージを最新バージョンに更新する
+#
+# ─────────────────────────────────────────────
+# 本文（任意）: 変更の動機・背景を説明する
+#   - "何を" ではなく "なぜ" を記述する
+#   - 72 文字で折り返す
+#
+#
+# ─────────────────────────────────────────────
+# フッター（任意）:
+#   Closes #<issue-number>          ← 関連 Issue を自動クローズ
+#   Refs #<issue-number>            ← 関連 Issue の参照のみ
+#   BREAKING CHANGE: <description>  ← 後方互換性のない変更
+#
