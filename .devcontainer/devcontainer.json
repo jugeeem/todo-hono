@@ -4,6 +4,10 @@
   "service": "app",
   "workspaceFolder": "/workspaces/service-template",
   "shutdownAction": "stopCompose",
+  "features": {
+    "ghcr.io/shyim/devcontainers-features/bun:latest": {},
+    "ghcr.io/robbert229/devcontainer-features/postgresql-client:latest": {}
+  },
   "customizations": {
     "vscode": {
       "extensions": [
