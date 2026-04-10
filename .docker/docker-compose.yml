@@ -23,7 +23,7 @@ services:
       # Mount workspace read-only so init.sh can locate DB submodule SQL files
       - ..:/workspace:ro
     ports:
-      - "5432:5432"
+      - "5433:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s

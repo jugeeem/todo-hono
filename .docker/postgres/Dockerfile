@@ -3,7 +3,8 @@ FROM postgres:16
 # Install Japanese locale required for DB creation (LC_COLLATE/LC_CTYPE = ja_JP.UTF-8)
 RUN apt-get update \
     && apt-get install -y --no-install-recommends locales \
-    && locale-gen ja_JP.UTF-8 \
+    && sed -i '/^# ja_JP.UTF-8/s/^# //' /etc/locale.gen \
+    && locale-gen \
     && update-locale LC_ALL=ja_JP.UTF-8 \
     && rm -rf /var/lib/apt/lists/*
 
