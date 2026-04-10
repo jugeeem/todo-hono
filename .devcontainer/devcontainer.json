@@ -13,9 +13,10 @@
       "extensions": [
         "GitHub.copilot",
         "GitHub.copilot-chat",
-        "mtxr.sqltools",
-        "mtxr.sqltools-driver-pg",
-        "ms-azuretools.vscode-docker"
+        "ms-azuretools.vscode-docker",
+        "Prisma.prisma",
+        "oven.bun-vscode",
+        "ms-ossdata.vscode-pgsql"
       ],
       "settings": {
         "sqltools.connections": [
@@ -41,5 +42,6 @@
       }
     }
   },
+  "postCreateCommand": "printf '#!/bin/sh\\n\"$BROWSER\" \"$@\"\\n' > /usr/local/bin/xdg-open && chmod +x /usr/local/bin/xdg-open",
   "remoteUser": "root"
 }
