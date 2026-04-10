@@ -1,0 +1,124 @@
+// ============================================================
+// td スキーマ — TODO 管理
+// ============================================================
+
+model Categories {
+  id String @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+
+  name        String  @db.VarChar(100)
+  description String?
+
+  userId String @map("user_id") @db.Uuid
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  createdBy String    @map("created_by") @db.Uuid
+  updatedAt DateTime  @default(now()) @map("updated_at") @db.Timestamptz
+  updatedBy String    @map("updated_by") @db.Uuid
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz
+  deletedBy String?   @map("deleted_by") @db.Uuid
+
+  user  Users   @relation(fields: [userId], references: [id])
+  todos Todos[]
+
+  @@unique([userId, name])
+  @@map("categories")
+  @@schema("td")
+}
+
+model Tags {
+  id String @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+
+  name String @db.VarChar(100)
+
+  userId String @map("user_id") @db.Uuid
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  createdBy String    @map("created_by") @db.Uuid
+  updatedAt DateTime  @default(now()) @map("updated_at") @db.Timestamptz
+  updatedBy String    @map("updated_by") @db.Uuid
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz
+  deletedBy String?   @map("deleted_by") @db.Uuid
+
+  user     Users      @relation(fields: [userId], references: [id])
+  todoTags TodoTags[]
+
+  @@unique([userId, name])
+  @@map("tags")
+  @@schema("td")
+}
+
+model Todos {
+  id String @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+
+  title       String    @db.VarChar(256)
+  description String?
+  status      String    @db.VarChar(50)
+  priority    Int       @default(2) @db.SmallInt
+  dueDate     DateTime? @map("due_date") @db.Timestamptz
+  completedAt DateTime? @map("completed_at") @db.Timestamptz
+
+  userId       String  @map("user_id") @db.Uuid
+  categoryId   String? @map("category_id") @db.Uuid
+  parentTodoId String? @map("parent_todo_id") @db.Uuid
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  createdBy String    @map("created_by") @db.Uuid
+  updatedAt DateTime  @default(now()) @map("updated_at") @db.Timestamptz
+  updatedBy String    @map("updated_by") @db.Uuid
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz
+  deletedBy String?   @map("deleted_by") @db.Uuid
+
+  user       Users       @relation(fields: [userId], references: [id])
+  category   Categories? @relation(fields: [categoryId], references: [id])
+  parentTodo Todos?      @relation("TodoSubtasks", fields: [parentTodoId], references: [id])
+  childTodos Todos[]     @relation("TodoSubtasks")
+
+  todoComments TodoComments[]
+  todoTags     TodoTags[]
+
+  @@map("todos")
+  @@schema("td")
+}
+
+model TodoComments {
+  id String @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+
+  content String
+
+  todoId String @map("todo_id") @db.Uuid
+  userId String @map("user_id") @db.Uuid
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  createdBy String    @map("created_by") @db.Uuid
+  updatedAt DateTime  @default(now()) @map("updated_at") @db.Timestamptz
+  updatedBy String    @map("updated_by") @db.Uuid
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz
+  deletedBy String?   @map("deleted_by") @db.Uuid
+
+  todo Todos @relation(fields: [todoId], references: [id])
+  user Users @relation(fields: [userId], references: [id])
+
+  @@map("todo_comments")
+  @@schema("td")
+}
+
+model TodoTags {
+  id String @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+
+  todoId String @map("todo_id") @db.Uuid
+  tagId  String @map("tag_id") @db.Uuid
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  createdBy String    @map("created_by") @db.Uuid
+  updatedAt DateTime  @default(now()) @map("updated_at") @db.Timestamptz
+  updatedBy String    @map("updated_by") @db.Uuid
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz
+  deletedBy String?   @map("deleted_by") @db.Uuid
+
+  todo Todos @relation(fields: [todoId], references: [id])
+  tag  Tags  @relation(fields: [tagId], references: [id])
+
+  @@unique([todoId, tagId])
+  @@map("todo_tags")
+  @@schema("td")
+}

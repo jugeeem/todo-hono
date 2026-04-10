@@ -1,0 +1,22 @@
+// ============================================================
+// pr スキーマ — パーミッション管理
+// ============================================================
+
+model Permissions {
+  id String @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+
+  name        String  @unique @db.VarChar(256)
+  description String?
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  createdBy String    @map("created_by") @db.Uuid
+  updatedAt DateTime  @default(now()) @map("updated_at") @db.Timestamptz
+  updatedBy String    @map("updated_by") @db.Uuid
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz
+  deletedBy String?   @map("deleted_by") @db.Uuid
+
+  rolePermissions RolePermissions[]
+
+  @@map("permissions")
+  @@schema("pr")
+}

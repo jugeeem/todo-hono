@@ -1,0 +1,63 @@
+// ============================================================
+// rl スキーマ — ロール管理
+// ============================================================
+
+model Roles {
+  id String @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+
+  name        String  @unique @db.VarChar(256)
+  description String?
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  createdBy String    @map("created_by") @db.Uuid
+  updatedAt DateTime  @default(now()) @map("updated_at") @db.Timestamptz
+  updatedBy String    @map("updated_by") @db.Uuid
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz
+  deletedBy String?   @map("deleted_by") @db.Uuid
+
+  rolePermissions RolePermissions[]
+  userRoles       UserRoles[]
+
+  @@map("roles")
+  @@schema("rl")
+}
+
+model RolePermissions {
+  id String @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+
+  roleId       String @map("role_id") @db.Uuid
+  permissionId String @map("permission_id") @db.Uuid
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  createdBy String    @map("created_by") @db.Uuid
+  updatedAt DateTime  @default(now()) @map("updated_at") @db.Timestamptz
+  updatedBy String    @map("updated_by") @db.Uuid
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz
+  deletedBy String?   @map("deleted_by") @db.Uuid
+
+  role       Roles       @relation(fields: [roleId], references: [id])
+  permission Permissions @relation(fields: [permissionId], references: [id])
+
+  @@map("role_permissions")
+  @@schema("rl")
+}
+
+model UserRoles {
+  id String @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+
+  userId String @map("user_id") @db.Uuid
+  roleId String @map("role_id") @db.Uuid
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  createdBy String    @map("created_by") @db.Uuid
+  updatedAt DateTime  @default(now()) @map("updated_at") @db.Timestamptz
+  updatedBy String    @map("updated_by") @db.Uuid
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz
+  deletedBy String?   @map("deleted_by") @db.Uuid
+
+  user Users @relation(fields: [userId], references: [id])
+  role Roles @relation(fields: [roleId], references: [id])
+
+  @@map("user_roles")
+  @@schema("rl")
+}

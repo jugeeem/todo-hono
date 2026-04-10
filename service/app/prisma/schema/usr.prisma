@@ -1,0 +1,49 @@
+// ============================================================
+// usr スキーマ — ユーザー管理
+// ============================================================
+
+model Users {
+  id String @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+
+  username String @unique @db.VarChar(256)
+  email    String @unique @db.VarChar(256)
+  password String @db.VarChar(512)
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  createdBy String    @map("created_by") @db.Uuid
+  updatedAt DateTime  @default(now()) @map("updated_at") @db.Timestamptz
+  updatedBy String    @map("updated_by") @db.Uuid
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz
+  deletedBy String?   @map("deleted_by") @db.Uuid
+
+  userInfo     UserInfo?
+  todos        Todos[]
+  categories   Categories[]
+  tags         Tags[]
+  todoComments TodoComments[]
+  userRoles    UserRoles[]
+
+  @@map("users")
+  @@schema("usr")
+}
+
+model UserInfo {
+  id String @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+
+  firstName String @map("first_name") @db.VarChar(256)
+  lastName  String @map("last_name") @db.VarChar(256)
+  bio       String?
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  createdBy String    @map("created_by") @db.Uuid
+  updatedAt DateTime  @default(now()) @map("updated_at") @db.Timestamptz
+  updatedBy String    @map("updated_by") @db.Uuid
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz
+  deletedBy String?   @map("deleted_by") @db.Uuid
+
+  userId String @unique @map("user_id") @db.Uuid
+  user   Users  @relation(fields: [userId], references: [id])
+
+  @@map("user_info")
+  @@schema("usr")
+}
