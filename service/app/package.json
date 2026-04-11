@@ -14,12 +14,14 @@
 		"prisma:migrate:dev": "bun --bun run prisma migrate dev",
 		"prisma:migrate:deploy": "bun --bun run prisma migrate deploy",
 		"prisma:migrate:reset": "bun --bun run prisma migrate reset",
-		"prisma:studio": "bun --bun run prisma studio"
+		"prisma:studio": "bun --bun run prisma studio",
+		"prisma:seed": "bun --bun run prisma/seed.ts"
 	},
 	"dependencies": {
 		"@heroui/react": "^3.0.2",
 		"@heroui/styles": "^3.0.2",
 		"@hono/node-server": "^1.19.13",
+		"@ory/client": "^1.22.34",
 		"@prisma/adapter-pg": "^7.7.0",
 		"@prisma/client": "^7.7.0",
 		"@prisma/extension-accelerate": "^3.0.1",
