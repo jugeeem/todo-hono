@@ -6,7 +6,10 @@
   "shutdownAction": "stopCompose",
   "features": {
     "ghcr.io/shyim/devcontainers-features/bun:latest": {},
-    "ghcr.io/robbert229/devcontainer-features/postgresql-client:latest": {}
+    "ghcr.io/robbert229/devcontainer-features/postgresql-client:latest": {},
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.14"
+    }
   },
   "customizations": {
     "vscode": {

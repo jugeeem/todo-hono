@@ -15,8 +15,8 @@ services:
       context: ./postgres
       dockerfile: Dockerfile
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: postgres
     volumes:
       - postgres-data:/var/lib/postgresql/data
@@ -31,6 +31,40 @@ services:
       retries: 5
     networks:
       - todo-network
+
+  kratos-migrate:
+    image: oryd/kratos:v1.3.0
+    command: migrate sql -e --yes
+    environment:
+      DSN: ${KRATOS_DSN}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - todo-network
+    restart: on-failure
+
+  kratos:
+    image: oryd/kratos:v1.3.0
+    command: serve -c /etc/config/kratos/kratos.yml --dev --watch-courier
+    environment:
+      DSN: ${KRATOS_DSN}
+      SECRETS_COOKIE: ${SECRETS_COOKIE}
+      SECRETS_CIPHER: ${SECRETS_CIPHER}
+      COURIER_SMTP_CONNECTION_URI: ${COURIER_SMTP_CONNECTION_URI}
+    volumes:
+      - ./kratos:/etc/config/kratos:ro
+    ports:
+      - "4433:4433"
+      - "4434:4434"
+    depends_on:
+      kratos-migrate:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+    networks:
+      - todo-network
+    restart: unless-stopped
 
 volumes:
   postgres-data:
