@@ -12,6 +12,8 @@ export type CreateTodoUseCaseInput = {
 	dueDate?: Date;
 	categoryId?: string;
 	parentTodoId?: string;
+	tagIds?: string[];
+	comments?: string[];
 	userId: string;
 };
 

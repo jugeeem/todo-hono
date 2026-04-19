@@ -1,8 +1,11 @@
 import { Hono } from "hono";
 import { prisma } from "@/lib/prisma";
 import { createAuthHandlers } from "@/server/adapters/handlers/auth-handler";
+import { createCategoryHandlers } from "@/server/adapters/handlers/category-handler";
 import { createPermissionHandlers } from "@/server/adapters/handlers/permission-handler";
 import { createRoleHandlers } from "@/server/adapters/handlers/role-handler";
+import { createTagHandlers } from "@/server/adapters/handlers/tag-handler";
+import { createTodoCommentHandlers } from "@/server/adapters/handlers/todo-comment-handler";
 import { createTodoHandlers } from "@/server/adapters/handlers/todo-handler";
 import { createUserHandlers } from "@/server/adapters/handlers/user-handler";
 import { createUserRoleHandlers } from "@/server/adapters/handlers/user-role-handler";
@@ -23,6 +26,9 @@ export function createApp() {
 		roleRepository,
 		userRoleRepository,
 		todoRepository,
+		todoCommentRepository,
+		categoryRepository,
+		tagRepository,
 	} = container;
 
 	app.onError(errorHandler);
@@ -127,6 +133,8 @@ export function createApp() {
 
 	// Users
 	const userHandlers = createUserHandlers(userRepository);
+	app.get("/users/me", auth, userHandlers.getMe);
+	app.patch("/users/me", auth, userHandlers.updateMe);
 	app.get(
 		"/users",
 		auth,
@@ -183,6 +191,100 @@ export function createApp() {
 		auth,
 		requirePermission("todos:write"),
 		todoHandlers.deleteTodo,
+	);
+
+	// Categories
+	const categoryHandlers = createCategoryHandlers(categoryRepository);
+	app.get(
+		"/categories",
+		auth,
+		requirePermission("todos:read"),
+		categoryHandlers.getCategories,
+	);
+	app.get(
+		"/categories/:id",
+		auth,
+		requirePermission("todos:read"),
+		categoryHandlers.getCategoryById,
+	);
+	app.post(
+		"/categories",
+		auth,
+		requirePermission("todos:write"),
+		categoryHandlers.createCategory,
+	);
+	app.patch(
+		"/categories/:id",
+		auth,
+		requirePermission("todos:write"),
+		categoryHandlers.updateCategory,
+	);
+	app.delete(
+		"/categories/:id",
+		auth,
+		requirePermission("todos:write"),
+		categoryHandlers.deleteCategory,
+	);
+
+	// Tags
+	const tagHandlers = createTagHandlers(tagRepository);
+	app.get("/tags", auth, requirePermission("todos:read"), tagHandlers.getTags);
+	app.get(
+		"/tags/:id",
+		auth,
+		requirePermission("todos:read"),
+		tagHandlers.getTagById,
+	);
+	app.post(
+		"/tags",
+		auth,
+		requirePermission("todos:write"),
+		tagHandlers.createTag,
+	);
+	app.patch(
+		"/tags/:id",
+		auth,
+		requirePermission("todos:write"),
+		tagHandlers.updateTag,
+	);
+	app.delete(
+		"/tags/:id",
+		auth,
+		requirePermission("todos:write"),
+		tagHandlers.deleteTag,
+	);
+
+	// Todo Comments
+	const todoCommentHandlers = createTodoCommentHandlers(todoCommentRepository);
+	app.get(
+		"/todos/:todoId/comments",
+		auth,
+		requirePermission("todos:read"),
+		todoCommentHandlers.getTodoComments,
+	);
+	app.get(
+		"/todos/:todoId/comments/:id",
+		auth,
+		requirePermission("todos:read"),
+		todoCommentHandlers.getTodoCommentById,
+	);
+	app.post(
+		"/todos/:todoId/comments",
+		auth,
+		requirePermission("todos:write"),
+		todoCommentHandlers.createTodoComment,
+	);
+	app.patch(
+		"/todos/:todoId/comments/:id",
+		auth,
+		requirePermission("todos:write"),
+		todoCommentHandlers.updateTodoComment,
+	);
+	app.delete(
+		"/todos/:todoId/comments/:id",
+		auth,
+		requirePermission("todos:write"),
+		todoCommentHandlers.deleteTodoComment,
 	);
 
 	return { app, container };

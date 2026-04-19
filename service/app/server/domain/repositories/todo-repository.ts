@@ -1,5 +1,22 @@
 import type { Result } from "@/server/use-cases/types";
 
+export type TodoTagInfo = {
+	id: string;
+	name: string;
+};
+
+export type TodoCategoryInfo = {
+	id: string;
+	name: string;
+};
+
+export type TodoCommentInfo = {
+	id: string;
+	content: string;
+	userId: string;
+	createdAt: Date;
+};
+
 export type TodoDto = {
 	id: string;
 	title: string;
@@ -11,6 +28,9 @@ export type TodoDto = {
 	userId: string;
 	categoryId: string | null;
 	parentTodoId: string | null;
+	category: TodoCategoryInfo | null;
+	tags: TodoTagInfo[];
+	comments: TodoCommentInfo[];
 	createdAt: Date;
 	updatedAt: Date;
 };
@@ -23,6 +43,8 @@ export type CreateTodoInput = {
 	dueDate?: Date;
 	categoryId?: string;
 	parentTodoId?: string;
+	tagIds?: string[];
+	comments?: string[];
 	userId: string;
 };
 
@@ -34,6 +56,8 @@ export type UpdateTodoInput = {
 	dueDate?: Date | null;
 	completedAt?: Date | null;
 	categoryId?: string | null;
+	tagIds?: string[] | null;
+	comments?: string[];
 	updatedBy: string;
 };
 

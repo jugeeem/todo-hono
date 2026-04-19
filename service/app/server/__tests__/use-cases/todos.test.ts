@@ -25,6 +25,9 @@ const sampleTodo: TodoDto = {
 	userId: "user-1",
 	categoryId: null,
 	parentTodoId: null,
+	category: null,
+	tags: [],
+	comments: [],
 	createdAt: new Date("2025-01-01"),
 	updatedAt: new Date("2025-01-01"),
 };
@@ -115,6 +118,27 @@ describe("use-cases/todos", () => {
 			expect(result.ok).toBe(true);
 		});
 
+		test("should create todo with tagIds and comments when provided", async () => {
+			let capturedInput: Record<string, unknown> = {};
+			const repo = createMockTodoRepository({
+				create: async (input) => {
+					capturedInput = { ...input };
+					return ok(sampleTodo);
+				},
+			});
+			await new CreateTodoUseCase(repo).execute({
+				title: "タグ付き Todo",
+				status: "pending",
+				priority: 2,
+				userId: "user-1",
+				tagIds: ["tag-1", "tag-2"],
+				comments: ["初期コメント"],
+			});
+
+			expect(capturedInput.tagIds).toEqual(["tag-1", "tag-2"]);
+			expect(capturedInput.comments).toEqual(["初期コメント"]);
+		});
+
 		test("should return error when repository fails", async () => {
 			const repo = createMockTodoRepository({
 				create: async () =>
@@ -141,6 +165,25 @@ describe("use-cases/todos", () => {
 			});
 
 			expect(result.ok).toBe(true);
+		});
+
+		test("should update todo with tagIds and comments when provided", async () => {
+			let capturedInput: Record<string, unknown> = {};
+			const repo = createMockTodoRepository({
+				update: async (_id, _userId, input) => {
+					capturedInput = { ...input };
+					return ok(sampleTodo);
+				},
+			});
+			await new UpdateTodoUseCase(repo).execute({
+				id: "todo-1",
+				userId: "user-1",
+				tagIds: ["tag-1"],
+				comments: ["追加コメント"],
+			});
+
+			expect(capturedInput.tagIds).toEqual(["tag-1"]);
+			expect(capturedInput.comments).toEqual(["追加コメント"]);
 		});
 
 		test("should pass updatedBy as userId to repository", async () => {

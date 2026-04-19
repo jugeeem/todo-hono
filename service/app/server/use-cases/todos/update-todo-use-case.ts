@@ -14,6 +14,8 @@ export type UpdateTodoUseCaseInput = {
 	dueDate?: Date | null;
 	completedAt?: Date | null;
 	categoryId?: string | null;
+	tagIds?: string[] | null;
+	comments?: string[];
 };
 
 export class UpdateTodoUseCase {

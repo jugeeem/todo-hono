@@ -37,6 +37,9 @@ const mockTodo: TodoDto = {
 	userId: "user-1",
 	categoryId: null,
 	parentTodoId: null,
+	category: null,
+	tags: [],
+	comments: [],
 	createdAt: now,
 	updatedAt: now,
 };
@@ -178,6 +181,33 @@ describe("adapters/handlers/todo-handler", () => {
 
 			expect(capturedInput.dueDate).toBeInstanceOf(Date);
 		});
+
+		test("should pass tagIds and comments to repository when provided", async () => {
+			let capturedInput: Record<string, unknown> = {};
+			const app = createTestApp(
+				createMockTodoRepository({
+					create: async (input) => {
+						capturedInput = { ...input };
+						return ok({ ...mockTodo, id: "todo-new", title: input.title });
+					},
+				}),
+			);
+
+			await app.request("/todos", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					title: "タグ付き Todo",
+					tagIds: ["550e8400-e29b-41d4-a716-446655440001"],
+					comments: ["最初のコメント"],
+				}),
+			});
+
+			expect(capturedInput.tagIds).toEqual([
+				"550e8400-e29b-41d4-a716-446655440001",
+			]);
+			expect(capturedInput.comments).toEqual(["最初のコメント"]);
+		});
 	});
 
 	describe("updateTodo", () => {
@@ -225,6 +255,32 @@ describe("adapters/handlers/todo-handler", () => {
 
 			expect(res.status).toBe(422);
 			expect(body.error.code).toBe("VALIDATION_ERROR");
+		});
+
+		test("should pass tagIds and comments to repository on update", async () => {
+			let capturedInput: Record<string, unknown> = {};
+			const app = createTestApp(
+				createMockTodoRepository({
+					update: async (_id, _userId, input) => {
+						capturedInput = { ...input };
+						return ok(mockTodo);
+					},
+				}),
+			);
+
+			await app.request("/todos/todo-1", {
+				method: "PATCH",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					tagIds: ["550e8400-e29b-41d4-a716-446655440001"],
+					comments: ["追加コメント"],
+				}),
+			});
+
+			expect(capturedInput.tagIds).toEqual([
+				"550e8400-e29b-41d4-a716-446655440001",
+			]);
+			expect(capturedInput.comments).toEqual(["追加コメント"]);
 		});
 	});
 

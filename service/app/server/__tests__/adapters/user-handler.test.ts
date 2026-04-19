@@ -30,6 +30,7 @@ const mockUserDto: UserDto = {
 	id: "user-1",
 	username: "testuser",
 	email: "test@example.com",
+	userInfo: null,
 	createdAt: now,
 	updatedAt: now,
 };

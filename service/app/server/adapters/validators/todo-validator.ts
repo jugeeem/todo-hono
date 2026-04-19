@@ -15,6 +15,8 @@ export const createTodoSchema = z.object({
 	dueDate: z.string().datetime().optional(),
 	categoryId: z.string().uuid().optional(),
 	parentTodoId: z.string().uuid().optional(),
+	tagIds: z.array(z.string().uuid()).optional(),
+	comments: z.array(z.string().min(1)).optional(),
 });
 
 export const updateTodoSchema = z.object({
@@ -25,6 +27,8 @@ export const updateTodoSchema = z.object({
 	dueDate: z.string().datetime().nullable().optional(),
 	completedAt: z.string().datetime().nullable().optional(),
 	categoryId: z.string().uuid().nullable().optional(),
+	tagIds: z.array(z.string().uuid()).nullable().optional(),
+	comments: z.array(z.string().min(1)).optional(),
 });
 
 export type CreateTodoBody = z.infer<typeof createTodoSchema>;

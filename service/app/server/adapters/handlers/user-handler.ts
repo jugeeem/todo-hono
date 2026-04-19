@@ -11,6 +11,32 @@ import { UpdateUserUseCase } from "@/server/use-cases/users/update-user-use-case
 
 export function createUserHandlers(userRepository: UserRepository) {
 	return {
+		getMe: async (c: Context<AppEnv>) => {
+			const auth = c.get("auth");
+			const useCase = new GetUserByIdUseCase(userRepository);
+			const result = await useCase.execute(auth.user.identityId);
+			if (!result.ok) throw result.error;
+			return successResponse(c, result.value);
+		},
+
+		updateMe: async (c: Context<AppEnv>) => {
+			const body = await c.req.json();
+			const parsed = updateUserSchema.safeParse(body);
+			if (!parsed.success) {
+				throw new ValidationError(
+					parsed.error.issues[0]?.message ?? "入力が無効です",
+				);
+			}
+			const auth = c.get("auth");
+			const useCase = new UpdateUserUseCase(userRepository);
+			const result = await useCase.execute(auth.user.identityId, {
+				...parsed.data,
+				updatedBy: auth.user.identityId,
+			});
+			if (!result.ok) throw result.error;
+			return successResponse(c, result.value);
+		},
+
 		getUsers: async (c: Context<AppEnv>) => {
 			const useCase = new GetUsersUseCase(userRepository);
 			const result = await useCase.execute();

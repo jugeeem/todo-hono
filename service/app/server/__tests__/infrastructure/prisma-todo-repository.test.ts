@@ -2,15 +2,37 @@ import { beforeEach, describe, expect, mock, test } from "bun:test";
 import type { PrismaClient } from "@/prisma/generated/prisma/client";
 import { PrismaTodoRepository } from "@/server/infrastructure/repositories/prisma-todo-repository";
 
-function createMockPrisma() {
+function createMockTx() {
 	return {
+		todos: {
+			create: mock(),
+			update: mock(),
+			findFirstOrThrow: mock(),
+		},
+		todoTags: {
+			createMany: mock(),
+			deleteMany: mock(),
+		},
+		todoComments: {
+			createMany: mock(),
+		},
+	};
+}
+
+type MockTx = ReturnType<typeof createMockTx>;
+
+function createMockPrisma() {
+	const tx = createMockTx();
+	const prisma = {
 		todos: {
 			findMany: mock(),
 			findFirst: mock(),
-			create: mock(),
 			update: mock(),
 		},
-	} as unknown as PrismaClient;
+		$transaction: mock(async (fn: (tx: MockTx) => Promise<unknown>) => fn(tx)),
+		_tx: tx,
+	};
+	return prisma as unknown as PrismaClient & { _tx: MockTx };
 }
 
 const sampleTodoRow = {
@@ -26,10 +48,13 @@ const sampleTodoRow = {
 	parentTodoId: null,
 	createdAt: new Date("2025-01-01"),
 	updatedAt: new Date("2025-01-01"),
+	category: null,
+	todoTags: [],
+	todoComments: [],
 };
 
 describe("infrastructure/repositories/prisma-todo-repository", () => {
-	let mockPrisma: PrismaClient;
+	let mockPrisma: PrismaClient & { _tx: MockTx };
 	let repository: PrismaTodoRepository;
 
 	beforeEach(() => {
@@ -49,6 +74,7 @@ describe("infrastructure/repositories/prisma-todo-repository", () => {
 			if (result.ok) {
 				expect(result.value).toHaveLength(1);
 				expect(result.value[0]?.title).toBe("テスト");
+				expect(result.value[0]?.tags).toEqual([]);
 			}
 		});
 
@@ -84,7 +110,10 @@ describe("infrastructure/repositories/prisma-todo-repository", () => {
 			const result = await repository.findByIdAndUserId("todo-1", "user-1");
 
 			expect(result.ok).toBe(true);
-			if (result.ok) expect(result.value?.title).toBe("テスト");
+			if (result.ok) {
+				expect(result.value?.title).toBe("テスト");
+				expect(result.value?.tags).toEqual([]);
+			}
 		});
 
 		test("should return null when todo does not exist", async () => {
@@ -112,9 +141,12 @@ describe("infrastructure/repositories/prisma-todo-repository", () => {
 
 	describe("create()", () => {
 		test("should create todo and return TodoDto", async () => {
-			(mockPrisma.todos.create as ReturnType<typeof mock>).mockResolvedValue(
-				sampleTodoRow,
-			);
+			(
+				mockPrisma._tx.todos.create as ReturnType<typeof mock>
+			).mockResolvedValue({ id: "todo-1" });
+			(
+				mockPrisma._tx.todos.findFirstOrThrow as ReturnType<typeof mock>
+			).mockResolvedValue(sampleTodoRow);
 
 			const result = await repository.create({
 				title: "テスト",
@@ -124,11 +156,14 @@ describe("infrastructure/repositories/prisma-todo-repository", () => {
 			});
 
 			expect(result.ok).toBe(true);
-			if (result.ok) expect(result.value.title).toBe("テスト");
+			if (result.ok) {
+				expect(result.value.title).toBe("テスト");
+				expect(result.value.tags).toEqual([]);
+			}
 		});
 
 		test("should return error when Prisma throws", async () => {
-			(mockPrisma.todos.create as ReturnType<typeof mock>).mockRejectedValue(
+			(mockPrisma.$transaction as ReturnType<typeof mock>).mockRejectedValue(
 				new Error("DB error"),
 			);
 
@@ -146,13 +181,15 @@ describe("infrastructure/repositories/prisma-todo-repository", () => {
 
 	describe("update()", () => {
 		test("should update todo when it exists", async () => {
-			const updated = { ...sampleTodoRow, status: "done" };
 			(mockPrisma.todos.findFirst as ReturnType<typeof mock>).mockResolvedValue(
 				sampleTodoRow,
 			);
-			(mockPrisma.todos.update as ReturnType<typeof mock>).mockResolvedValue(
-				updated,
-			);
+			(
+				mockPrisma._tx.todos.update as ReturnType<typeof mock>
+			).mockResolvedValue(undefined);
+			(
+				mockPrisma._tx.todos.findFirstOrThrow as ReturnType<typeof mock>
+			).mockResolvedValue({ ...sampleTodoRow, status: "done" });
 
 			const result = await repository.update("todo-1", "user-1", {
 				status: "done",
@@ -181,7 +218,7 @@ describe("infrastructure/repositories/prisma-todo-repository", () => {
 			(mockPrisma.todos.findFirst as ReturnType<typeof mock>).mockResolvedValue(
 				sampleTodoRow,
 			);
-			(mockPrisma.todos.update as ReturnType<typeof mock>).mockRejectedValue(
+			(mockPrisma.$transaction as ReturnType<typeof mock>).mockRejectedValue(
 				new Error("DB error"),
 			);
 

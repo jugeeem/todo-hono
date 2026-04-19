@@ -8,6 +8,7 @@ import {
 import type {
 	UpdateUserInput,
 	UserDto,
+	UserInfoDto,
 	UserRepository,
 } from "@/server/domain/repositories/user-repository";
 import type { Result } from "@/server/use-cases/types";
@@ -19,6 +20,13 @@ const userSelect = {
 	email: true,
 	createdAt: true,
 	updatedAt: true,
+	userInfo: {
+		select: {
+			firstName: true,
+			lastName: true,
+			bio: true,
+		},
+	},
 } as const;
 
 function toUserDto(user: {
@@ -27,11 +35,13 @@ function toUserDto(user: {
 	email: string;
 	createdAt: Date;
 	updatedAt: Date;
+	userInfo: UserInfoDto | null;
 }): UserDto {
 	return {
 		id: user.id,
 		username: user.username,
 		email: user.email,
+		userInfo: user.userInfo,
 		createdAt: user.createdAt,
 		updatedAt: user.updatedAt,
 	};
@@ -157,6 +167,32 @@ export class PrismaUserRepository implements UserRepository {
 					...(input.email !== undefined && { email: input.email }),
 					updatedBy: input.updatedBy,
 					updatedAt: new Date(),
+					...(input.userInfo !== undefined && {
+						userInfo: {
+							upsert: {
+								create: {
+									firstName: input.userInfo.firstName ?? "",
+									lastName: input.userInfo.lastName ?? "",
+									bio: input.userInfo.bio ?? null,
+									createdBy: input.updatedBy,
+									updatedBy: input.updatedBy,
+								},
+								update: {
+									...(input.userInfo.firstName !== undefined && {
+										firstName: input.userInfo.firstName,
+									}),
+									...(input.userInfo.lastName !== undefined && {
+										lastName: input.userInfo.lastName,
+									}),
+									...(input.userInfo.bio !== undefined && {
+										bio: input.userInfo.bio,
+									}),
+									updatedBy: input.updatedBy,
+									updatedAt: new Date(),
+								},
+							},
+						},
+					}),
 				},
 				select: userSelect,
 			});
