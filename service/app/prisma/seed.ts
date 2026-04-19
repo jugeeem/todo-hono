@@ -189,8 +189,25 @@ async function seedUsers(roleMap: Record<string, string>) {
 
 		if (existingIdentities.length > 0 && existingIdentities[0]) {
 			identityId = existingIdentities[0].id;
+			// パスワードを常に最新の状態に上書きする
+			await identityApi.updateIdentity({
+				id: identityId,
+				updateIdentityBody: {
+					schema_id: "default",
+					traits: {
+						email: seedUser.email,
+						username: seedUser.username,
+					},
+					state: "active",
+					credentials: {
+						password: {
+							config: { password: COMMON_PASSWORD },
+						},
+					},
+				},
+			});
 			console.log(
-				`  ↺ Kratos Identity 既存: ${seedUser.email} (${identityId})`,
+				`  ↺ Kratos Identity 更新: ${seedUser.email} (${identityId})`,
 			);
 		} else {
 			// Kratos Identity を新規作成
